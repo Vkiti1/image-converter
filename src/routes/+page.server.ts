@@ -8,10 +8,13 @@ import type { Actions } from './$types';
 export const actions: Actions = {
 	convertImage: async (event) => {
 		const formData = await event.request.formData();
+
 		const images = formData.getAll('images') as File[];
 		const imageType = formData.get('imageType');
 
-		const promises = images.map(async (image) => {
+		const filteredImages = images.filter((image) => image.type.includes('image'));
+
+		const promises = filteredImages.map(async (image) => {
 			const newImage = await convertImage(image, imageType as keyof FormatEnum);
 			const fileName = createFileName(image.name, imageType as keyof FormatEnum);
 
@@ -23,9 +26,6 @@ export const actions: Actions = {
 		const writeFiles = convertedImages.map(async (image) => {
 			return fs.writeFile(`src/output/${image.fileName}`, image.newImage, (err) => {
 				if (err) console.log(err);
-				else {
-					console.log('File written successfully\n');
-				}
 			});
 		});
 
